@@ -4,6 +4,9 @@ pipeline {
                jdk 'jdk17'
                nodejs 'node16'
            }
+       environment {
+        SCANNER_HOME=tool 'sonar-scanner'
+       }
        stages {
             stage('Cleanup Workspace'){
                steps {
@@ -12,8 +15,16 @@ pipeline {
             }
             stage('Git Checkout'){
                steps {
-                    cleanWs()
+                    git changelog: false, poll: false, url: 'https://github.com/blessingmbatha/Facebook-Clone.git'
                }
             }
-       }
+            stage("Sonarqube Analysis "){
+               steps{
+                    withSonarQubeEnv('sonar-server') {
+                          sh ''' $SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=Facebook \
+                          -Dsonar.projectKey=Facebook '''
+                    }
+               }
+            } 
+      }
 }
