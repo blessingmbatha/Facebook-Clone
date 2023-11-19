@@ -25,6 +25,24 @@ pipeline {
                           -Dsonar.projectKey=Facebook '''
                     }
                }
-            } 
+            }
+            stage("quality gate"){
+                steps {
+                      script {
+                           waitForQualityGate abortPipeline: false, credentialsId: 'sonar-token' 
+                      }
+                } 
+            }
+            stage('Install Dependencies') {
+                steps {
+                       sh "npm install"
+                }
+            }
+            stage('OWASP FS SCAN') {
+                steps {
+                    dependencyCheck additionalArguments: '--scan ./ --disableYarnAudit --disableNodeAudit', odcInstallation: 'OWASP DC'
+                    dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
+                }
+            }
       }
 }
